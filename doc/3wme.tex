@@ -1,0 +1,1021 @@
+% pdflatex 3wme
+% bibtex 3wme
+\documentclass[twocolumn]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[ngerman]{babel}
+\usepackage{amsmath}
+
+\usepackage{fancyvrb}
+\usepackage{fvextra}
+
+% \usepackage{palatino}
+%
+% \usepackage{newpxtext,newpxmath}
+%
+\usepackage[sc]{mathpazo} % or option osf
+\usepackage{newpxmath}
+
+\usepackage{natbib}
+\bibliographystyle{natdin}
+
+\usepackage{adjustbox}
+\usepackage[a4paper, margin=1mm, includefoot, footskip=15pt]{geometry}
+
+\usepackage[pdftitle={Funktionen und Koeffizienten des Waldwachstumssimulators 3wm}
+, pdfauthor={Georg Kindermann}
+, pdfsubject={Waldwachstum}
+, pdfkeywords={Waldwachstum, Modell, Oberhöhe, Standort, Bonität, Zuwachs, Wald, Forst, 3wme, Wiener Wald Wachstums Modell}
+, pdflang={de-AT-1996}
+, hidelinks
+, pdfpagemode=None]{hyperref}
+
+\nonfrenchspacing
+%\sloppy
+\usepackage{breqn}
+\usepackage{enumitem}
+
+\title{Funktionen und Koeffizienten des Waldwachstumssimulators 3WME}
+\author{Georg Kindermann}
+% \date{18. Mai 2021}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Einleitung}
+
+Die Entwicklung von Beständen wird durch deren Behandlung
+beeinflusst. Das Ergebnis von prognostizierten Bestandsentwicklungen
+dient als Entscheidungsgrundlage für die Planung im
+Forstbetrieb. Solange lediglich die Wachstumskomponente der
+Bestandsentwicklung betrachtet wird, werden traditionell Ertragstafeln
+verwendet. Ertragstafeln können dieser Aufgabe nur bedingt gerecht
+werden, da in der Regel nur wenige Behandlungsvarianten zur Auswahl
+stehen. Sollen stattdessen Waldwachstumsmodelle verwendet werden,
+zeigt sich gelegentlich, dass nicht alle benötigten Daten vorhanden
+sind bzw. nur mit erheblich höherem Aufwand aufgenommen werden können.
+
+Die Messung der Baumhöhe war in der Vergangenheit relativ aufwändig
+und es wurden daher Baumhöhen mittels Höhenkurven rechnerisch
+ergänzt. Heutzutage kann die Höhenmessung mittels Fernerkundung mit
+geringem Aufwand flächendeckend durchgeführt werden.
+Standortsparameter wie bodenchemische und -physikalische
+Eigenschaften, Hangneigung, Exposition, Temperatur oder Niederschlag
+können aus relativ hochauflösenden Karten abgelesen werden. Um dieser
+Entwicklung Rechnung zu tragen, wurden Wachstumsfunktionen auf Basis
+der im Zuge der Österreichischen Waldinventur beobachteten
+Einzelbaumzuwächse sowie Verwendung von flächendeckenden
+Standortskarten parametrisiert.
+
+Um diese Neuentwicklung zu verdeutlichen wurde für die hier
+beschriebenen Waldwachstumsmodelle ein neuer Name, \textbf{W}iener
+\textbf{W}ald \textbf{W}alchstums \textbf{M}odell\textbf{E}
+($\mathit{3}W \atop M\mathcal{E}$), gewählt. Die Neuentwicklung
+basiert auf den Erfahrungen, welche von den Modellen\emph{Caldis
+Vatis}, \emph{PrognAus}, \emph{g4m}, \emph{MOSES} und deren
+Vorgängern gewonnen wurden.
+
+Diese Modelle wurden im \emph{Managementplan Forst}, dem
+Internetangebot der Landwirtschaftskammer für alle WaldbesitzerInnen
+in Österreich, (\url{www.lko.at/forstprogramme}) umgesetzt.
+
+\section{Daten}
+
+Datengrundlage bilden die Aufnahmen der Österreichischen Waldinventur
+\citep{hauk2009waldinventur} in den Jahren 1981--2018. Dabei wurden
+BHD, H, Kronenansatz, Nutzungsart, Baumart, geogr.\ Lage und
+Aufnahmezeitpunkt verwendet.
+
+Als Wetterdaten wurden Monatsmitteltemperatur~[$^{\circ}$C],
+Monatsniederschlag~[mm/30~Tage] und Monatsmittel der
+Globalstrahlung~[W] von den Stationen der Zentralanstalt für
+Meteorologie und Geodynamik und den Niederschlagswerten der Stationen
+des Hydrographisches Zentralbüros verwendet. Diese Wetterdaten wurden
+nach \cite{kindermann2010jahrringanalyse} auf den jeweiligen
+Waldinventurpunkt in Abhängigkeit von dessen Seehöhe und
+geographischer Lage interpoliert.
+
+Von \cite{geoland2021dgm} wurde das digitale Geländemodell mit einer
+Auflösung von 10\,m x 10\,m verwendet. Von \cite{geologie2015} wurde
+die geologische Karte verwendet.
+
+Von den physikalische Bodeneigenschaften wurde die
+Wasserspeicherkapazität von \cite{Ballabio2016soilPhysical} und die
+Bodentiefe von \cite{Hengl2017soilgrids} entnommen. Die chemischen
+Bodeneigenschaften (pH-Wert, C/N Verhältnis, N, P, K, Ca) wurden von
+\cite{Ballabio2019soilChemical} entnommen.
+
+\section{Methoden}
+
+\subsection{Oberhöhenfächer}
+
+Der Oberhöhenfächer wurde in Anlehnung an
+\cite{kindermann2018siteIndexCurves} erstellt.
+Dazu wird mit Hilfe der Oberhöhenfunktion.
+
+%h=c0*log(1+exp(c2)*t^c3)^c1
+\begin{equation}
+  \label{eq:ohFun}
+  h = c_0 \log(1 + e^{c_2}t^{c_3})^{c_1}
+\end{equation}
+
+wobei $h$ die \emph{Oberhöhe} im \emph{Alter} $t$ ist. Der \emph{periodische
+Höhenzuwachs} $dh$ aus dem \emph{Zuwachszeitraum} $dt$ berechnet sich:
+
+%dh=c0*log(1+exp(c2)*(t+dt)^c3)^c1–h
+\begin{equation}
+  \label{eq:ohFunDhT}
+  dh = c_0 \log(1 + e^{c_2}(t + dt)^{c_3})^{c_1} - h
+\end{equation}
+
+Durch umformen der Oberhöhenfunktion kann das \emph{Alter} $t$ mit
+
+%t=((exp((h/c0)^(1/c1))-1)/exp(c2))^(1/c3)
+\begin{equation}
+  \label{eq:ohFunT}
+  t = \left(\frac{e^{\left(\frac{h}{c_0}\right)^{1/c_1}} - 1}{e^{c_2}}\right)^{1/c_3}
+\end{equation}
+
+ersetzt werden. Damit kann der Höhenzuwachs ohne das Alter beschrieben werden:
+
+%dh=c0*log(1 + exp(c2)*((((exp((h/c0)^(1/c1)) - 1) / exp(c2)) ^ (1/c3)) + dt)^c3)^c1 – h
+\begin{equation}
+  \label{eq:ohFunDh}
+  dh = c_0 \log\left(1 + e^{c_2}\left(\left(\frac{e^{\left(\frac{h}{c_0}\right)^{1/c_1}} - 1}{e^{c_2}}\right)^{1/c_3} + dt\right)^{c_3}\right)^{c_1} - h
+\end{equation}
+
+Die Koeffizienten $c_0$, $c_1$, $c_2$ und $c_3$ wurden mittels
+nichtlinaren gemischten Modellen (nlmer vom paket lme4
+(Version~1.1-26) in R (Version~4.0.4)) geschätzt. Dabei wurden
+Zufallseffekte des Probepunktes bei den Koeffizienten $c_0$ und $c_2$
+unterstellt. Es zeigte sich das $c_2$ mit $c_0$ mit
+
+%c2 = cc0 + cc1 * c0 ^ cc2
+\begin{equation}
+  \label{eq:ohFunC2}
+  c_2 = cc_0 + cc_1 * c_0^{cc_2}
+\end{equation}
+
+beschrieben werden kann. Die Koeffizienten $cc_0$, $cc_1$ und $cc_2$
+wurden mittels nichtlinearer Regression bestimmt.
+
+Da allerdings eine Veränderung des Standortes während der beobachteten
+Höhenzuwächse nicht ausgeschlossen werden kann, und dies einen
+Einfluss auf den Höhenzuwachsgang hätte, wurde in einem
+Zwischenschritt die Oberhöhenbonität aus Standortsparmetern geschätzt
+und der sich damit ergebende Trend von den Beobachtungen
+herausgerechnet.
+
+\subsection{Schätzung der Oberhöhenbonität aus Standortsparametern}
+
+Mit dem zuvor erstellen Oberhöhenfächer wurde unter Verwendung von
+Oberhöhe, Oberhöhenzuwachs und Zuwachszeitraum auf jedem Inventurpunkt
+der Koeffizient $c_0$ und damit die Oberhöhenbonität bestimmt. In
+einem ersten Schritt wurde dieser $c_0$ mit \emph{Temperatur} und
+\emph{Niederschlag} beschrieben wobei die
+\emph{Wasserspeicherkapazität} des Bodens berücksichtigt wurde. Es
+wurden \emph{Monatsmitteltemperatur}~[$^{\circ}$C], \emph{Strahlung als
+  Monatsmittel}~[$\text{W}/\text{m}^2$] und Summe des
+\emph{Monatsniederschlages}~[mm/30~Tage] der einzelnen Jahre in denen
+der Zuwachs beobachtet wurde, verwendet.
+Der Koeffizient $c_0$ ergibt sich als Summe der einzelnen Monate:
+
+% c0 = c0Jan + c0Feb + c0Mär + c0Apr + c0Mai + c0Jun + c0Jul + c0Aug + c0Sep + c0Okt + c0Nov + c0Dez
+% c0Monat = cI0 * exp(-nn/7990) * Anzahl Tage in diesem Monat
+%   * max(0, cI15 + Strahlung)^cI16
+% * max(0, (cI1 + Temperatur))^cI2
+% * max(0, 1 – Potentielle Evapotranspiration /tanh(cI5 * pflanzenverfügbares Wasser)/cI3)^cI4
+% * (1. + tanh(cI14 * (tmax- tmin)))
+\begin{align}
+  \label{eq:c0Monat}
+  c_0 &= c_{0_{\text{Jan}}} + c_{0_{\text{Feb}}} + \cdots + c_{0_{\text{Nov}}} + c_{0_{\text{Dez}}} \\
+  c_{0_{\text{Monat}}} &= c_{I_0} \cdot e^{-\frac{nn}{7990}} \cdot \text{Anzahl Tage in diesem Monat} \notag \\
+      &\phantom{{}= } \cdot \max(0, c_{I_{15}} + \text{Strahlung})^{c_{I_{16}}} \notag \\
+      &\phantom{{}= } \cdot \max(0, c_{I_{1}} + \text{Temperatur})^{c_{I_{2}}} \notag \\
+  \noalign{\hfill $\cdot \max(0, 1 - \frac{\text{Potentielle Evapotranspiration}}{\tanh(c_{I_5} \cdot \text{pflanzenverfügbares Wasser}) * cI3})^{c_{I_4}}$} \notag \\
+  &\phantom{{}= } \cdot (1 + \tanh(c_{I_{14}} (t_{max}- t_{min})))
+\end{align}
+
+Wobei das Bodenwasser nach folgendem Pseudocode modelliert wurde:
+
+%\begin{figure*}
+%  \begin{Verbatim}[breaklines=true,frame=single,fontsize=\small]
+  \begin{Verbatim}[breaklines=true,frame=single,fontsize=\scriptsize]
+pflanzenverfügbares Wasser = Niederschlag in den Boden + verfügbares Bodenwasser
+Niederschlag in den Boden = Niederschlag – (Interzeption + Oberflächenabfluss)
+verfügbares Bodenwasser = Bodenwasser * (Bodenwasser / nutzbare Feldkapazität)^cI9
+Interzeption = cI7
+Oberflächenabfluss = max(0, Niederschlag – Interzeption – (nutzbare Feldkapazität – Bodenwasser))
+Potentielle Evapotranspiration = 30. * exp(17.62 * Temperatur / (243.12 + Temperatur))
+Evapotranspiration = Potentielle Evapotranspiration * cI6
+Bodenwasser im nächsten Monat = min(nutzbare Feldkapazität, max(0, Bodenwasser + Niederschlag in den Boden – Evapotranspiration))
+nutzbare Feldkapazität = nutzbare Feldkapazität je cm Bodentiefe * min(cI18, Bodengründigkeit)
+\end{Verbatim}
+%\end{figure*}
+
+Die Koeffizienten wurden mittels nichtlinearer Regression bestimmt.
+
+Dabei wird für Lagen oberhalb der Waldgrenze, wenn auch eine geringe,
+gelegentlich aber dennoch eine Oberhöhe geschätzt. Um dieses Verhalten
+abzuschwächen wird der zuvor bestimmte wert von c0 noch modifiziert
+mit:
+
+\begin{dgroup*}
+  \begin{dmath}
+    c_{0W} = c_0 \cdot \max(0, \min(1, \frac{\frac{1}{1 + e^x} - 0.1}{0.8}))
+  \end{dmath}
+  \begin{dmath*}
+    x = c_{W_1} + c_{W_2} \cdot t10 + c_{W_3} \cdot \text{Schneemenge} + c_{W_4} * \cos(\text{Exposition}) \cdot \sin(\text{Hangneigung})^0.3 + c_{W_5} \cdot \sin(\text{Hangneigung}) + c_{W_6} \cdot \text{form1} + c_{W_7} \cdot \text{form2} + c_{W_8} \cdot \text{form3} + c_{W_9} \cdot 1013.25 \cdot (1 - 0.0065 * nn / 288.15)^{5.255}
+  \end{dmath*}
+\end{dgroup*}
+  
+Hier wurde das 30--jährige Mittel des Zeitraumes (1981-2010) für
+Monatsmitteltemperatur und Monatsniederschlag verwendet wobei:
+
+\begin{description}[font=\normalfont\itshape]
+\item[Schneemenge:] Summe der Monatsniederschläge für Monate in denen
+  die Monatsmitteltemperatur kleiner als 1°C ist.
+\item[t10:] Monatsmitteltemperatur des dritt wärmsten Monats.
+\item[form1:] 1 wenn es sich um einen Graben bei einem Suchradius von
+  210\,m handelt, sonst 0.
+\item[form2:] 1 wenn es sich um ein Tal bei einem Suchradius von 3\,km
+  handelt, sonst 0.
+\item[form3:] 1 wenn es sich um einen Gipfel bei einem Suchradius von
+  3\,km handelt, sonst 0.
+\end{description}
+
+Im nächsten Schritt wird der Koeffizient mit Bodenparametern modifiziert.
+
+\begin{dgroup*}
+  \begin{dmath}
+    c_{0_{WB}} = c_{0_W} \frac{2}{1 + e^{-x}}
+  \end{dmath}
+  \begin{dmath*}
+    x = so_{\text{Intercept}} + so_{\text{CN}} \cdot CN + so_N \cdot N + so_P \cdot P + so_{pH} \cdot pH + so_{pH2} \cdot pH^2 + so_{P2} \cdot P^2
+  \end{dmath*}
+\end{dgroup*}
+
+Wobei \emph{CN} das C/N Verhältnis, \emph{N} der Bodenstickstoff,
+\emph{P} der Phoshorgehalt und \emph{pH} der Boden pH--Wert in CaCl
+darstellen.
+
+Im nächsten Schritt wird der Koeffizient mittels Hangneigung und
+Exposition modifiziert.
+
+\begin{dgroup*}
+  \begin{dmath}
+    c_{0_{WBH}} = c_{0_{WB}} \frac{2}{1 + e^{-x}}
+  \end{dmath}
+  \begin{dmath*}
+    x = ha_{\text{Intercept}} + ha_{si} \cdot si + ha_{co} \cdot co
+    + ha_{\text{Hangneig}} \cdot \text{Hangneigung}
+    + ha_{si2} \cdot si^2 + ha_{co2} * co^2
+  \end{dmath*}
+  \begin{dmath*}
+    si = \sin(\text{Exposition}) \cdot \text{Hangneigung}/90
+  \end{dmath*}
+  \begin{dmath*}
+    co = \cos(\text{Exposition}) \cdot \text{Hangneigung}/90
+  \end{dmath*}
+\end{dgroup*}
+
+Es zeigte sich, dass die Bestandesdichte die Oberhöhenbonität beeinflusst.
+
+\begin{dgroup}
+  \begin{dmath}
+    c_{0_{WBHD}} = c_{0_{WBH}} \cdot \frac{2}{1 + e^{- bd_{\text{Intercept}} - bd_b \cdot b}}
+  \end{dmath}
+  \begin{dmath*}
+    b = pmin(1, ggha / g_{max})
+  \end{dmath*}
+  \begin{dmath}
+    gmax = bd_{c_0} * (1 - \frac{1}{1+h*bd_{c_1}})
+  \end{dmath}
+\end{dgroup}
+
+Hierbei ist h die Höhe in [m], ggha die Grundfläche in $m^2/ha$ wobei
+allerdings bei Bäumen bis 1.3\,m Höhe deren Höhe in m und bei Bäumen
+über 1.3\,m deren BHD in cm um 1.3 erhöht, verwendet wird.
+
+Auch der Grundflächenanteil, ebenfalls mit dem um 1.3\,cm erhöhtem
+BHD, der beigemischten anderen Baumarten hatte einen Einfluss auf die
+Bonität.
+
+\begin{dmath}
+  c_{0_{WBHDA}} = c_{0_{WBHD}} \cdot \frac{2}{1 + e^{- \sum_{ba} \text{baCoef}_{ba} \cdot \text{GAnteil}_{ba} }}
+\end{dmath}
+
+Wobei die Summe der Anteile der Baumarten 1 ergibt.
+
+\subsection{Höhenzuwachs}
+
+Bei bekanntem $c_0$ bzw.\ bekannter Oberhöhenbonität unter Verwendung
+eines Oberhöhenfächer, ist der potentiell mögliche Höhenzuwachs
+vorgegeben. Aufgabe des Höhenzuwachsmodells ist es, diesen aufgrund
+von Konkurrenz gegebenenfalls zu reduzieren.
+
+\begin{dgroup}
+  \begin{dmath}
+    ih/ih_{Pot} = \frac{1}{1 + e^{-x \pm y}}
+  \end{dmath}
+  \begin{dmath}
+    x = ch_0 + ch_1 \dot \ln(1 + gh) + ch_2 \dot h/c_0 + ch_3 \dot h/(1.3 + d) + ch_4 \dot (h/(1.3 + d))^2 + \sum(ch_{5Sp} \dot sqrt(hh_{Sp}))
+  \end{dmath}
+  \begin{dmath}
+    y = ch_6 + ch_7 * abs(x)
+  \end{dmath}
+  \begin{dmath}
+    gh = \sum_{i=0}^{Nachbarn} \frac{max(0, h_i - h)}{h_i} \cdot \frac{(1.3 + d_i)^2 \cdot \pi}{40000} \cdot nRep_i \cdot chGh_{\text{Baumart}_i}
+  \end{dmath}
+  \begin{dmath}
+    hh_{Sp} = \sum_{i=0}^{\text{Nachbarn der Baumartengruppe} Sp} max(0, h_i \cdot chHh_{\text{Baumart}_i} - h)  \cdot nRep_i
+  \end{dmath}
+\end{dgroup}
+
+Wobei $ih$ der Höhenzuwachs, $ih_{Pot}$ der pottentielle Höhenzuwachs,
+welche aus dem Höhenfächer abgelesen werden kann, $ch_?$
+Koeffizienten, $gh$ die nach Baumarten gewichtete
+($chGh_{\text{Baumart}}$) Grundfläche der Nachbarn in Wipflehöhe des
+betrachteten Baumes in $\text{m}^2\text{/ha}$ wobei die Kreisfläche
+als linear mit der Höhe abnehmend angenommen wird, $h$ die
+Ausgansbaumhöhe in m, $d$ der BHD in cm und $hh_{Sp}$ die nach
+Baumartengruppen differenzierte Summe der überragenden Kronenlängen
+der Konkurrenten ist. Mittels dem Faktor $y$ kann die
+Standardabweichugn des Schätzwertes bestimmt werden.
+
+\subsection{Durchmesserzuwachs}
+
+Der Durchmesserzuwachs wird nicht direkt geschätzt sondern aus der
+Volumsleistung je Hektar rückgerechnet. Dabei wird der Einfluss von
+Höhenzuwachs und Formveränderung derzeit noch nicht berücksichtigt. In
+einem ersten Schritt wird die Bestandesfläche auf die einzelnen Bäume
+aufgeteilt. Dazu wird derzeit proportional zur, nach Baumarten
+gewichteten, Kreisfläche aufgeteilt. Weitere Möglichkeiten zur
+Bestimmung der Standfläche sind in
+\cite{kindermann2019einzelbaumBestandesdichte} angeführt.
+
+\begin{dgroup}
+  \begin{dmath}
+    \text{Standfläche0} = 10000 \cdot \frac{d^{cd} \cdot cdw{\text{Baumart}}}{\sum_{i=0}^{Konkurrenten} d_i^{cd} \cdot cdw{\text{Baumart}_i} \cdot nrep_i}
+  \end{dmath}
+  \begin{dmath}
+     \label{eq:bhd2d}
+    d =
+    \begin{cases}
+      bhd + 1.3 & \text{wenn } h\geq 1.3 m\\
+      h         & \text{wenn } h < 1.3 m\\
+    \end{cases}
+  \end{dmath}
+  \begin{dmath}
+    \text{Standfläche} =
+    \begin{cases}
+      \text{Standfläche0} & \text{wenn } \text{Standfläche0} < h^2 \pi\\
+       h^2 \pi            & \text{wenn } \text{Standfläche0} > h^2 \pi\\
+     \end{cases}
+  \end{dmath}
+\end{dgroup}
+
+Dabei ist zu berücksichtigen das bei $nrep > 1$ der betrachtete Baum
+als Konkurrent mit $nrep - 1$ eingeht. Es wird eine maximale mögliche
+Standflächengröße mit $h^2 \pi$ angenommen. Ein, dem geleisteten
+Volumszuwachs je Hektar proportionaler Wert $ivHaProp$, wird mittels
+Gleichung~\ref{eq:ivHaProp} bestimmt wobei auch hier $d$ nach
+Gleichung~\ref{eq:bhd2d} verwendet wurde.
+
+\begin{dgroup}
+  \begin{dmath}
+    \label{eq:ivHaProp}
+    ivHaProp = cd_0
+    + cd_1 \cdot log(d / \text{Standfläche})
+    + cd_2 \cdot log(c_0)
+    + cd_3 \cdot log(1 + h/d)
+    + cd_4 \cdot h/d
+    + cd_5 \cdot log(1 + d)
+    + \sum_{i=0}^{\text{Baumart}} cd_{6_i} \cdot cba_i
+    + \sum_{i=0}^{\text{Baumart}} cd_{7_i} \cdot hh_i
+  \end{dmath}
+  \begin{dmath}
+    \label{eq:idCba}
+    cba_{\text{Baumart}} = \sum_{i=0}^{Konkurrenten der Baumart} max(0, d_i^2 - (cd_{cba} * d)^2) * nrep_i
+  \end{dmath}
+  \begin{dmath}
+    \label{eq:idHa}
+     hh_{\text{Baumart}} = \sum_{i=0}^{Konkurrenten der Baumart} max(0, h_i - cd_{hh} * h) * nrep_i
+  \end{dmath}
+\end{dgroup}
+
+Als Konkurrenzindices wurde zum einen die konkurrenzierende
+Kreisfläche der Nachbarn je Baumartengruppe (Gleichung~\ref{eq:idCba})
+sowie Konkurrenz aufgrund von Höhendifferenzen
+(Gleichung~\ref{eq:idHa}) verwendet. Für den Schätzwert $ivHaProp$
+wird eine Obergrenze definiert (Gleichung~\ref{eq:ivHaPropMax}) sowie
+dessen Streuung mit Gleichung~\ref{eq:ivHaPropSL},
+\ref{eq:ivHaPropSH}) bestimmt.
+
+\begin{dgroup}
+  \begin{dmath}
+    \label{eq:ivHaPropMax}
+    ivHaPropMax =  c_0 *  cd_{\text{ivMax}}
+  \end{dmath}
+  \begin{dmath}
+    \label{eq:ivHaPropSL}
+    ivHaProp_L = ivHaProp - exp(cd_{sl_0} + cd_{sl_1} * ivHaProp)
+  \end{dmath}
+  \begin{dmath}
+    \label{eq:ivHaPropSH}
+    ivHaProp_H = ivHaProp + 1/(1+exp(cd_{sh_0} + cd_{sh_1} * ivHaProp))
+  \end{dmath}
+\end{dgroup}
+
+Die Umrechnung dieses Schätzwertes $ivHaProp$ in einen
+Durchmesserzuwachs $id$ erfolgt mit Gleichung~\ref{eq:iv2id}.
+\begin{dmath}
+  \label{eq:iv2id}
+  id = \sqrt{d^2 + \frac{e^{ivHaProp} \cdot \text{Standfläche}}{h} \cdot 4 / \pi} - d
+\end{dmath}
+
+\subsection{Durchmesser aus Baumhöhe}
+
+Bei Baumhöhenmessungen aus Luftbilder oder mittels Airborne
+Laserscanning wird meist der BHD nicht erfasst. Es wurde der BHD~[cm]
+in Abhängigkeit von der Eigentumsart, der Höhe $h$~[m], der
+Hangneigung (0 bei Hangneigungen bis, 1 bei über $25^{\circ}$), der
+Seehöhe $nn$~[m] und der aktuellen Grundflächenhaltung~[$m^2/ha$]
+beschrieben.
+
+\begin{dgroup}
+  \begin{dmath}
+    \label{eq:dEsti}
+    bhd = (h - 1.3)/e^z
+  \end{dmath}
+  \begin{dmath}
+    z = c_{d_{\text{Eigentumsart}}} + c_{d_1} \cdot h + c_{d_2} \cdot log(h) + c_{d_3} \cdot (hangneigung > 25) + c_{d_4} \cdot nn + c_{d_5} \cdot  gha
+  \end{dmath}
+\end{dgroup}
+
+
+\subsection{Ergänzung des Kronenansatzes}
+
+Die Kronenlänge bzw.\ die Höhe des Kronenansatzes wird durch die
+Lichtkonkurrenz der Nachbarbäume, die bisher über die \emph{gesamte}
+Lebensspanne des Baumes geherrscht hat, dessen Baumart und künstliche
+Aufastungen beeinflusst. Um das Modell einfach zu halten wurden
+lediglich die Höhe und der der BHD verwendet.
+
+\begin{dmath}
+  \label{eq:hka}
+  hka = h \cdot (1 - e^{chka_0 + chka_1 \cdot h/bhd + chka_1 \cdot d})
+\end{dmath}
+
+\subsection{Zufallsnutzung und Bruchereignisse}
+
+Zufallsereignisse werden durch vielfältige Faktoren beeinflusst. Diese
+sind oft schwer erfassbar und erstrecken sich auch auf die umliegenden
+Bestände (Hiebszug) sowie die Topographie. Hier werden einfach zu
+erhebende Baum und Bestandesmerkmale verwendet und eine
+durchschnittliche Schadwahrscheinlichkeit bestimmt, die im
+Einzelbestand deutlich abweichen kann.
+
+\subsubsection{Zufallsnutzung}
+
+In Gleichung~\ref{eq:pNutz}
+wird die Wahrscheinlichkeit, dass es eine Zufallsnutzung in diesem
+Jahr auf einem WZP--Punkt gibt, geschätzt. Dabei haben die
+\emph{Geologie}, die Spitzenhöhe über alle Baumarten $h_{max}$ und je
+Baumartengruppe $h_{max_{Ba}}$, der maximale H/D-Wert über alle
+Baumarten $max(h/d)$ und je Baumartengruppe $max(h/d)_{Ba}$ sowie die
+Grundfläche $gha$ einen Einfluss.
+
+\begin{dgroup*}
+  \begin{dmath}
+    \label{eq:pNutz}
+    p_{Zfn_{Punkt}} = \frac{1}{1 + e^-z}
+  \end{dmath}
+  \begin{dmath*}
+    z = czp_{Geologie}
+    + czp_1 \cdot h_{max}
+    + \sum_{Ba} (czp_{2_{Ba}} \cdot h_{max_{Ba}})
+    + czp_3 \cdot max(h/d)
+    + czp_4 \cdot max(h/d)^2
+    + \sum_{Ba} (czp_{5_{Ba}} \cdot max(h/d)_{Ba})
+    + czp_6 \cdot \ln(1 + gha)
+  \end{dmath*}
+\end{dgroup*}
+
+Die Wahscheinlichkeit, dass auf einem Punkt mit Zufallsnutzung, alle
+Bäume genutzt werden, errechnet sich mit Gleichung~\ref{eq:pNutzAlle}
+wobei $h_{max}$ die maximale Baumhöhe~[m], $gha$ die
+Grundfläche~[$m^2/ha$] und $h_l$ die loreysche Mittelhöhe~[m] ist.
+
+\begin{dgroup*}
+  \begin{dmath}
+    \label{eq:pNutzAlle}
+    p_{Zfn_{Alle}} = \frac{1}{1 + e^-z}
+  \end{dmath}
+  \begin{dmath*}
+    z = czpa_{Geologie}
+    + czpa_1 \cdot \ln(1+ h_{max})
+    + czpa_2 \cdot \ln(1 + gha)
+    + czpa_3 \cdot h_l
+  \end{dmath*}
+\end{dgroup*}
+
+Die Nutzungswarscheinlichkeit des Einzelbaumes, auf einem Punkt mit
+Zufallsnutzung, auf dem nicht alle Bäume genutzt wurden, errechnet mit
+Gleichung~\ref{eq:pNutzBaum} wobei $h$ die Baumhöhe~[m], $gha$ die
+Grundfläche~[$m^2/ha$] und $nn$ die Seehöhe~[m] ist.
+
+\begin{dgroup*}
+  \begin{dmath}
+    \label{eq:pNutzBaum}
+    p_{Zfn_{Baum}} = \frac{1}{1 + e^-z}
+  \end{dmath}
+  \begin{dmath*}
+    z = czpb_{Geologie}
+    + czpb_1 \cdot h
+    + czpb_2 \cdot gha
+    + czpb_3 \cdot nn
+  \end{dmath*}
+\end{dgroup*}
+
+
+\subsubsection{Bruchereignisse}
+
+In Gleichung~\ref{eq:pBruch} wird die Wahrscheinlichkeit, dass es ein
+Bruchereigniss in diesem Jahr auf einem WZP--Punkt gibt,
+geschätzt. Dabei haben die \emph{Geologie}, die maximale Höhe
+$h_{max}$, der maximale H/D-Wert *max(h/d)* [1] die Grundfläche $gha$
+[$m^2/ha$], die loreysche Mittelhöhe $h_l$ [m] (mit der Kreisfläche
+gewichtete Höhe), der Durchmesser des Grundflächenmittelstamm $d_g$
+[cm], die Seehöhe [m] und die Hangneigung [$^\circ$] einen Einfluss.
+
+\begin{dgroup*}
+  \begin{dmath}
+    \label{eq:pBruch}
+    p_{Bruch_{Punkt}} = \frac{1}{1 + e^-z}
+  \end{dmath}
+  \begin{dmath*}
+    z = cbp_{Geologie}
+    + cbp_1 \cdot h_{max}
+    + cbp_2 \cdot max(h/d)
+    + cbp_3 \cdot \l(1 + gha)
+    + cbp_4 \cdot h_l
+    + cbp_5 \cdot d_g
+    + cbp_6 \cdot \ln(100 + nn)
+    + cbp_7 \cdot nn
+    + cbp_8 \cdot \text{Hangneigung}
+  \end{dmath*}
+\end{dgroup*}
+
+Die Wahrscheinlichkeit, dass auf einem Punkt mit Bruchereignissen alle
+Bäume gebrochen sind, errechnet sich mit Gleichung~\ref{eq:pBruchAlle}
+wobei $gha$ die Grundfläche [$m^2/ha$] ist.
+
+\begin{dgroup*}
+  \begin{dmath}
+    \label{eq:pBruchAlle}
+    p_{Bruch_{Alle}} = \frac{1}{1 + e^-z}
+  \end{dmath}
+  \begin{dmath*}
+    z = cbpa_0
+    + cbpa_1 \cdot \ln(1 + gha)
+  \end{dmath*}
+\end{dgroup*}
+
+Die Bruchwarscheinlichkeit des Einzelbaumes, auf einem Punkt mit Bruch
+bei dem nicht alle Bäume gebrochen sind, errechnet sich mit
+Gleichung~\ref{eq:pBruchBaum} wobei die \emph{Geologie}, die Baumhöhe
+$h$ [m], das H/D-Verhältniss [1], die Grundfläche $gha$ [$m^2/ha$],
+der SDI (Stand density index
+$SDI = N \cdot (\frac{d_g}{25})^{-1.605}$) [$N_{25}/ha$] und die
+Seehöhe $nn$ [m] verwendet werden.
+
+\begin{dgroup*}
+  \begin{dmath}
+    \label{eq:pBruchBaum}
+    p_{Bruch_{Baum}} = \frac{1}{1 + e^-z}
+  \end{dmath}
+  \begin{dmath*}
+    z = czpb_{Geologie}
+    + cbpb_1 \cdot h
+    + cbpb_2 \cdot h/d
+    + cbpb_3 \cdot gha
+    + cbpb_4 \cdot sdi
+    + cbpb_5 \cdot nn
+  \end{dmath*}
+\end{dgroup*}
+
+\subsection{Erstellen einer Ertragstafel}
+
+Mit den vorgestellten Funktionen lässt sich ein Waldwachstumsmodell,
+welches die Entwicklung von Höhe und BHD des Einzelstammes sowie
+dessen verbleib im Bestand beschreibt, erstellen. Wobei das
+Ausscheiden eines Baumes durch Eingriffe, Zufallsnutzungen und
+Mortalität aufgrund von Konkurrenz erfolgen kann. Eine Methode zur
+Überprüfung des Modells stellt die Erstellung einer Ertragstafel
+dar. Um die weiteren Möglichkeiten aufzuzeigen wurden die einzelnen
+Stämme mit Hilfe der Einzelstamm--Sortentafel auf Sortimente
+aufgeteilt und auch die Biomasse bestimmt.
+
+Bei den Zuwachsfunktionen wurden deren Zufallsstreuung angegeben die,
+bei der Anwendung hier, zufällig über den Schätzwert gelegt
+wurden. Zusätzlich wurde noch angenommen das der Standort und die
+einzelnen Bäume nicht vollkommen identisch sind. Diese Heterogenität
+wurde durch eine zufällige aber über den Simmulationszeitraum konstant
+gehaltenen Streuung der Oberhöhenbonität von $\pm 1.5$\,m Rechnung
+getragen.
+
+Für die Simulation wurden Baumpositionen eines ca.\ 1\,Ha großen
+Bestand erzeugt und die Konkurrenz abstandsabhängig bestimmt. Bei der
+Erstdurchforstung wurde zwischen den Pflanzreihen 3.5\,m breite
+Rückegassen mit einem maximalen Abstand von 20\,m angelegt. Der
+Pflanzverband wurde so gewählt das die Baumverteilung, der
+angestrebten Endstammzahl, einen regelmäßigen Dreiecksverband
+ergibt. Auf diese Position wurde ein Baum gepflanzt. Drei weiter Bäume
+wurden im Abstand von 1/3 des Endbaumabstandes um diesen Baum
+gepflanzt. Damit entstand in \emph{unregelmäßiger Weitverband} mit
+jeweils vier Bäumen als Gruppe. Für die erzeugten Baumposition wurde
+angenommen das diese auf 30\,cm genau gepflanzt werden konnten.
+
+Von den gepflanzten Bäumen wurde angenommen dass 20\,\% ausfallen
+bevor sie eine Höhe von 1.3\,m erreicht haben. Diese Ausfälle wurden
+zufällig über der Fläche verteilt unter der Annahme das horstweise
+Ausfälle in Zuge von Nachbesserungen beseitigt werden
+konnten. Zusätzlich wurde das Auftreten von Zufallsnutzungen, Brüchen
+und konkurrenzbedingte Mortalität realisiert unter der Annahme das
+diese aus dem Bestand ausscheiden.
+
+Als Behandlung wurden drei Eingriffe vorgesehen bevor es zu erhöhter
+konkurrenzbedingte Mortalität kommt. Durch Auswahl entsprechender
+Anfangsstammzahlen wurden diese im Alter von 20, 45 und 115 Jahren
+durchgeführt. Der erste Eingriff wurde als Hochdurchforstung
+durchgeführt und reduziert die ursprünglichen vier Bäume der Gruppe
+auf zwei. Beim zweiten Eingriff wurde zufällig auf einen Baum
+reduziert womit die Endstammzahl erreicht wurde, solange nicht alle
+Bäume der Vierergruppe von Ausfällen betroffen waren. Der letzte ein
+Eingriff wurde als Niederdurchforstung, mit einer Reduktion der
+Grundläche um 20\,\%, durchgeführt um das ankommen von Naturverjüngung
+zu erleichtern. Alle weiteren Entnahmen, die in der Regel jensets der
+üblichen Umtriebszeit liegen werden, sind zum Teil durch Bruch und
+Zufallsnutzungen aber überwiegend durch Überschreiten der maximalen
+Bestandesdichte bedingt und können als Plenterbewirtschaftung in der
+Praxis umgesetzt werden.
+
+Da sich sowohl die Zuwachsleistung als auch die Oberhöhenbonität durch
+unterschiedliche Bewirtschaftung verändern, ist dennoch eine
+Bonitätsangabe, je Tafel, nötig um einen Vergleich zwischen
+verschiedenen Behandlungen zu ermöglichen. In diesem Fall wurde eine
+Refferenzoberhöhe gewählt, die sich aus der Oberhöhenkurve
+(Gleichung~\ref{eq:ohFun}) ergibt.
+
+
+\section{Ergebnisse}
+
+\subsection{Oberhöhenfächer}
+
+Da eine Schätzung von $c_0$, $c_1$, $c_2$ und $c_3$ gleichzeitig mit
+den vorhandenen Daten nicht möglich war wurden die Koeffizienten
+$c_1=0.75$ und $c_3=3$ konstant gehalten. $c_2$ errechnet sich aus
+$c_0$ mit den Koeffizienten: $cc_0 = -11.146124$, $cc_1 = 0.020238$
+und $cc_2 = 1.903105$. $c_0$ ist variabel und bestimmt die Bonität.
+
+\subsection{Schätzung der Oberhöhenbonität aus Standorsparametern}
+
+Es ergaben sich folgende Koeffizienten für den Einfluss von
+Temperatur, Strahlung und Niederschlag:
+
+\texttt{cI0 = 6.103775e-05, cI1 = 7.002676, cI2 = 1.428587, cI3 = 1.476124e+02, cI4 = 1.066501, cI5 = 4.080917e-02, cI6 = 1.040640, cI7 = 0, cI8 = 0, cI9 = 3.553800e-06, cI10 = 5.483664, cI11 = 0, cI12 = 0, cI13 = 0, cI14 = 6.319343e-02, cI15 = -5.992448, cI16 = 0.6198672, cI17 = 5.058839e+02}
+
+Es ergaben sich folgende Koeffizienten zur Bestimmung der oberen Waldgrenze:
+
+\texttt{cW1 = 23.537192679, cW2 = - 0.549791635, cW3 = 0.002743781, cW4 = 0.367703576, cW5 = - 1.730203792, cW6 = 0.418663281, cW7 = 0.556252777, cW8 = 0.091375384, cW9 = 0.022929243}
+
+Es ergaben sich folgende Koeffizienten zur Bestimmung des Bodeneisflusses:
+
+\texttt{soIntercept = -0.5033563268, soEsdacCN = -0.0173330532, soEsdacN = 0.0242756719, soEsdacP = 0.0068670425, soEsdacpH_CaCl = 0.3640807711, soEsdacpH_CaCl2 = -0.0469397314, soEsdacP2 = -0.0001540427}
+
+Es ergaben sich folgende Koeffizienten zur Bestimmung des Einflusses von Exposition und Hangneigung:
+
+\texttt{haIntercept = -0.03307927, haSi = 0.10513010, haCo = 0.07524978, haHangneig = 0.00647353, haSi2 = -1.41254718, haCo2 = -1.57046515}
+
+Die Koeffizienten zur Bestandesdichte:
+
+\texttt{bdC0 = 160.88389592, bdC1 = 0.04631407, bdIntercept = -0.09700211, bdB = 0.17728830}
+
+Der Koeffizient baCoef ist für die einzelnen Baumarten:
+
+\texttt{Fichte = 0.04599804, Tanne = -0.12496514, Lärche = -0.08785919, Weißkiefer = -0.40278417, Schwarzkiefer = -0.35177806, Zirbe = -0.40715214, Rotbuche = -0.17560870, Eiche = -0.11356914, Hainbuche = -0.24940727, Esche = 0.08089571, Ahorn = 0.11923299, Ulme = 0.40572294, Edelkastanie = 0.25672288, Robinie = 0.24202747, Sorbus- und Prunusarten = -0.33233703, Birke = -0 .03686508, Schwarzerle = 0.20264060, Grauerle = 0.11576176, Linde = -0.14250231, Aspe, Weiß-, Silberpappel = 0.10775285, Baumweiden = 0.42065542, Rest = 0.09451984}
+
+\subsection{Höhenzuwachs}
+
+Die Koeffizienten für den Höhenzuwachs der Fichte sind:
+
+\texttt{ch0 = 2.478770320, ch1 = -0.214554399, ch2 = -0.712918493, ch3 = 3.481531436, ch4 = -2.999678187\\
+ch5: Fichte=-0.023742528, Tanne=-0.007042547, Rotbuche=-0.028132932, Lärche=-0.011868042, Rest=-0.014606372, Weißkiefer=-0.009344628\\
+chGh: Fichte=1.4525345, Tanne=1.2212739, Rotbuche=1.1591178, Lärche=1.0646313, Rest=0.9495616, Weißkiefer=0.9512430\\
+chHh: Fichte=1.1495333, Tanne=0.9032277, Rotbuche=0.8445919, Lärche=0.8214862, Rest=0.8677137, Weißkiefer=0.5961510\\
+ch6= 1.7031438, ch7 = 0.1198871}
+
+
+\subsection{Durchmesserzuwachs}
+
+Die Koeffizienten für den Durchmesserzuwachs der Fichte sind:
+
+\texttt{
+  cd = 1.2423323\\
+  cdw: Fichte=1, Tanne=0.9827017, Rotbuche=0.7934112, Lärche=1.1037928, Rest=0.7442270, Weißkiefer=0.6551159\\
+  cd0 = -4.7340084, cd1 = 0.9392332, cd2 = 1.3491139, cd3 = 14.8226513, cd4 = -8.1405769, cd5 = 0.7164459\\
+  cd6: Fichte=-0.0122210, Tanne=-0.0103623, Rotbuche=-0.0289442, Lärche=-0.0135921, Rest=-0.0043686, Weißkiefer=-0.0102314\\
+  cd7: Fichte=-0.0119269, Tanne=-0.0036543, Rotbuche=-0.0111465, Lärche=-0.0052169, Rest=-0.0109765, Weißkiefer=-0.0050748\\
+  cdCba = 0.5210695, cdHh = 1.0712452\\
+  cdIvMax = 6.255492\\
+  cdSl0 = 1.3832451, cdSl1 = -0.5352921, cdSh0 = -2.4570928, cdSh1 = 0.7596363\\
+}
+
+\subsection{Durchmesser aus Baumhöhe}
+
+Die Koeffizienten zur Abschätzung der BHD's der Fichte sind:
+
+\texttt{
+  cd: Kleinwald bis 200Ha = -0.69595545, Bundesforste = -0.6982561, Privat 200-1000ha = -0.6962923, Privat > 1000ha = -0.6773922, Gebieskörperschaften = -0.7316092\\
+  cd1 = -0.02158519, cd2 = 0.31476845, cd3 = -0.013345940, cd4 = -0.0002650310, cd5 = 0.0031319565\\
+}
+
+\subsection{Ergänzung des Kronenansatzes}
+
+Die Koeffizienten zur Bestimmung der Kronenansatzhöhe der Fichte sind:
+
+\texttt{
+  chk0 = 0.176194138297613, chk1 = -0.563810526391337, chk2 = -0.00232276544050889
+}
+
+\subsection{Zufallsnutzung und Bruchereignisse}
+
+Die verwendete Geologiekarte unterschied folgende typen: \texttt{1 =
+  Quartär i. Allg. (Alluvium; Pleistozän entlang der
+  Hauptentwässerungslinien und Moränen im Alpenvorland), 2 =
+  Molassezone; Obereozän - Miozän; Inneralpine Becken; Neogen, 3 =
+  Allochthone und parautochthone Molasse; Obereozän - Miozän/Oberjura,
+  4 = Alttertiärklippen (Ernstbrunner Klippen), 5 = Andesit, Dazit,
+  Trachyt; Karpat, Baden, 6 = Basalt, Basanit, Nephelinit, Tuff,
+  Sarmat/Pannon - Plio-/Pleistozän, 7 = Post-variszische Klastika
+  (Perm von Zöbing); Perm, 8 = Granitoid (Südböhmischer Pluton);
+  Karbon, 9 = Metamorphite i. Allg.: meist Paragneis, Glimmerschiefer
+  (Moldanubikum, Moravikum), 10 = Orthogneis, 11 = Amphibolit, 12 =
+  Marmor, Kalksilikatgestein, 13 = Granulit, 14 = Ultrabasit, 15 =
+  Kontinentalrandsediment (Helvetikum i.w.S. inkl. Grestener- und
+  Hauptkilppenzone); Jura - Mitteleozän, 16 = Liebensteiner- und
+  Feuerstätter Decke (nicht differenziert); Lias - Eozän, 17 =
+  Rhenodanubischer Flysch; Unterkreide - Eozän, 18 = Tiefmarines
+  Sediment - Ophiolith (Ybbsitzer- , Sulzer- und St. Veiter-Klippen,
+  Nordrandzone); Jura - Kreide, 19 = Ozeanisches Metasediment,
+  z. T. flyschartig (Bündner Schiefer, Rechnitzer Serie,
+  Prättigauflysch); Jura - Kreide, z. T. Alttertiär, 20 =
+  Grünschiefer, Prasinit, Serpentinit, 21 = Eklogit führendes
+  Metasediment, 22 = Metasediment (in Falknis- und Sulzfluh-Decke
+  nicht differenziert ); Permomesozoikum, z. T. Alttertiär, 23 =
+  Metasediment (Brennkogel-, Kaserer-Serie); Jura - Kreide, 24 =
+  Metasediment (Hochstegen-Serie); Malm, 25 = Metasediment
+  (Wustkogel-, Seidlwinkel-, Schrovin-Serie); Permotrias, 26 =
+  Orthogneis (Zentralgneis); Permokarbon, 27 = Metasediment,
+  Metavulkanit (Habach-, Greiner-, Storz-, Kareck-Serie); Paläozoikum,
+  28 = Migmatit, Anatexit, migmatischer Paragneis (Altes Dach,
+  Altkristallin i. Allg.), 29 = Amphibolit
+  (Zwölferzug-Basisamphibolit), 30 = überwiegend Karbonatgestein;
+  Mitteltrias - Unterkreide, 31 = Siliciklastika; Permoskyth, 32 =
+  meist Klastika (Gosau - Schichten); Oberkreide - Eozän, 33 =
+  Karbonatgestein, Klastika (Karbon von Nötsch); oberes Vise -
+  Oberkarbon, 34 = Karbonatgestein, Klastika (Grauwackenzone /
+  Veitscher Decke); oberes Vise - Oberkarbon, 35 = Phyllit,
+  Metaklastika, Metavulkanit (Grauwackenzone/Silbersberg-Decke
+  westl. Aflenz nicht ausgeschieden); Altpaläozoikum
+  i. Allg. ?Permoskyth, 36 = Post-variszische Klastika; Oberkarbon, 37
+  = überwiegend pelitisch-psammitisches Sediment; Oberordovicium, 38 =
+  Karbonatgestein, 39 = Basischer Vulkanit, 40 = Porphyroid
+  (Blasseneck Porphyroid); Oberordovicium, 41 = Granitoid;
+  Permokarbon, 42 = Altkristallin i. Allg. (meist Paragneis,
+  Glimmerschiefer lokal, auch Granatphyllit), 43 = Orthogneis, 44 =
+  Amphibolit, 45 = Marmor, 46 = Ultrabasit, 47 = Schladminger
+  Kristallin, 48 = Bundschuh Kristallin, 49 = Tonalit, Granodiorit,
+  Oligozän, 50 = Karbonatgestein; Trias, 51 = Post-variszische
+  Klastika und Karbonatgestein; Oberkarbon - Perm, 52 = Kalk,
+  Feinklastika, 53 = Phyllit; Oberordovicium - Unterkarbon, 54 =
+  Quarzphyllite, z. T. Phyllonite, 55 = Siliciklastika; Permoskyth, 56
+  = überwiegend Karbonatgestein; Mitteltrias - Jura, 57 = Migmatit, 58
+  = Porphyroid; Perm, 59 = Tektonische Melange ostalpiner und
+  penninischer Gesteine (Matreier Zone - Nordrahmenzone,
+  Richbergkogel-Serie, Arosa-Zone); Permomesozoikum, 60 = Metasediment
+  (Tasna-Decke); Permotrias, 61 = Firn, Gletscher, 62 = Gewässer}
+
+\subsubsection{Zufallsnutzung}
+
+Die Koeffizienten zur Bestimmung der Wahrscheinlichkeit von
+Zufallsnutzungen sind:
+
+\texttt{czpGeologie: 1 = -8.30256937894367, 2 = -8.08871507353082, 3 = -8.11571058388957, 4 = -19.8359812836458, 5 = -6.82468098910134, 6 = -7.04153475076478, 7 = -20.2783461786802, 8 = -8.08536642999795, 9 = -8.43950837757173, 10 = -7.96618422806721, 11 = -7.93160504833828, 12 = -20.3510236763067, 13 = -7.797394212408, 14 = -20.2374616766888, 15 = -8.8267711687451, 16 = -8.32301475646734, 17 = -8.22808736258911, 18 = -9.30912676971561, 19 = -8.2261592655735, 20 = -8.19748944486436, 21 = -8.30256937894367, 22 = -8.32032252576032, 23 = -8.86892881623049, 24 = -8.30256937894367, 25 = -7.94227532115599, 26 = -9.50353270954064, 27 = -8.61883128578808, 28 = -8.96201007890408, 29 = -20.9182396848282, 30 = -8.30759753164257, 31 = -8.34072917101393, 32 = -8.56880910493686, 33 = -21.0999193295738, 34 = -8.19910780452667, 35 = -8.30256937894367, 36 = -8.09550723106612, 37 = -8.33387009702767, 38 = -8.38040503797902, 39 = -8.94279395912906, 40 = -10.1720605784638, 41 = -8.54360409910846, 42 = -8.63990356156941, 43 = -8.81494970721182, 44 = -8.16534032760471, 45 = -8.86820323258083, 46 = -8.30256937894367, 47 = -9.39331673979358, 48 = -8.70205678141078, 49 = -20.6054854813017, 50 = -9.19944031929362, 51 = -9.47647446376869, 52 = -8.49590402219882, 53 = -20.5578874256253, 54 = -8.85006624342649, 55 = -8.07988633644507, 56 = -8.18821526443021, 57 = -8.07205282276932, 58 = -20.8440037233556, 59 = -8.39984891208148, 60 = -20.7951032133098, 61 = -8.30256937894367, 62 = -21.2283852424871\\
+  czp1 = 0.0225333258856312\\
+  czp2: Fichte = 0.014373484995117, Tanne = 0.00129157419682988,
+  Lärche = 0.00706441753754056, Weißkiefer = -0.0253178078716667,
+  Rotbuche = 0.00468822998768224, Eiche = 0.0106845085774845, Sonstige
+  Nadelbäume = 0.0190035463975034, Sonstige Laubbäume =
+  0.00216545238614761\\
+  czp3 = 0.019204809264182, czp4 = -6.82706934633721e-05\\
+  czp5: Fichte = 0.00256315899523833, Tanne = -0.00232696837895208,
+  Lärche = -0.0025486163406973, Weißkiefer = 0.00510876429361565,
+  Rotbuche = -0.00107484225869725, Eiche = -0.0040440513111897,
+  Sonstige Nadelbäume = -0.00697160802096001, Sonstige Laubbäume =
+  -0.000392100957238878 czp6 = 0.241305715058825 }
+
+Die Koeffizienten zur Bestimmung dass alle Bäume genutzt werden wenn
+es ein Zufallsnutzung gibt sind:
+
+\texttt{czpaGeologie: 1 = 11.0790627922303, 2 = 10.3246556124911, 3 = 11.8788008985786, 4 = 11.0790627922303, 5 = -6.1562640919763, 6 = -4.3823086720443, 7 = 11.0790627922303, 8 = 9.1211939373004, 9 = 11.5699158809105, 10 = 10.1811835557015, 11 = 11.2955684980698, 12 = 11.0790627922303, 13 = 11.7329621164063, 14 = 11.0790627922303, 15 = -4.9125618880595, 16 = -3.8420331037367, 17 = 8.98805894534786, 18 = -3.8844346755181, 19 = 10.7820049483129, 20 = -4.0174491810746, 21 = 11.0790627922303, 22 = -4.1924667854116, 23 = -3.6113243708454, 24 = 11.0790627922303, 25 = -4.2054804224754, 26 = 13.8646429088023, 27 = -5.5327353576535, 28 = -3.466495024734, 29 = 11.0790627922303, 30 = 10.4480483657256, 31 = 9.732027155678, 32 = 11.4246487714958, 33 = 11.0790627922303, 34 = -6.4848393647968, 35 = 11.0790627922303, 36 = 33.0908087903055, 37 = 10.6445806474352, 38 = 11.1348986706791, 39 = -4.8895616929252, 40 = -5.7568342630096, 41 = -5.0149782092159, 42 = 9.8247371944927, 43 = 32.3470141839399, 44 = 10.8317270293504, 45 = -4.918269109839, 46 = 11.0790627922303, 47 = -5.0100454091237, 48 = 11.2000405291458, 49 = 11.0790627922303, 50 = -3.7795688774657, 51 = 27.4288370970397, 52 = 10.8850357149786, 53 = 11.0790627922303, 54 = -5.1123668978069, 55 = 11.756518514744, 56 = 10.2188893040119, 57 = 10.8112224292404, 58 = 11.0790627922303, 59 = 11.169988216078, 60 = 11.0790627922303, 61 = 11.0790627922303, 62 = 11.0790627922303\\
+  czpa1 = -4.15036298957266
+  , czpa2 = -1.35713028813666
+  , czpa3 = 0.21843439092469
+}
+
+Die Koeffizienten zur Bestimmung der Wahrscheinlichkeit, dass ein Baum zufällig genutzt wird, auf einem Punkt mit Zufallsnutzung, auf dem nicht alle Bäume genutzt wurden lauten:
+
+\texttt{czpbGeologie: 1 = -4.44226686221951, 2 = -4.62630813794232, 3 = -20.6945113490088, 4 = -4.44226686221951, 5 = -19.8027129126629, 6 = -21.1670318160569, 7 = -4.44226686221951, 8 = -5.94203107558192, 9 = -4.73146600251547, 10 = -5.60213761720105, 11 = -20.9904730711994, 12 = -4.44226686221951, 13 = -20.4586252579172, 14 = -4.44226686221951, 15 = -20.6693659158126, 16 = -20.53968761141, 17 = -4.56337664838091, 18 = -3.86058581940821, 19 = -3.64316169019144, 20 = -20.1007315895403, 21 = -4.44226686221951, 22 = -19.936693791771, 23 = -20.4899423968611, 24 = -4.44226686221951, 25 = -20.2359505982548, 26 = -20.5188403148562, 27 = -20.4883103934481, 28 = -20.2392253860276, 29 = -4.44226686221951, 30 = -5.0705346547036, 31 = -4.94372032799955, 32 = -5.64971678713203, 33 = -21.0330416050764, 34 = -3.96394429312823, 35 = -4.44226686221951, 36 = -4.44226686221951, 37 = -4.7074222463544, 38 = -3.8290993320417, 39 = -20.6324392425798, 40 = -20.8710555272345, 41 = -4.34448198597979, 42 = -5.03708041503771, 43 = -20.4930095031568, 44 = -4.76205061241755, 45 = -20.5736336642792, 46 = -4.44226686221951, 47 = -20.5217746140384, 48 = -4.75396295704817, 49 = -20.2584270978137, 50 = -20.3537209329255, 51 = -20.5080051141535, 52 = -5.38336243008069, 53 = -20.1098707177856, 54 = -6.57936398899202, 55 = -4.56766571088515, 56 = -20.4277897487765, 57 = -21.0387219807324, 58 = -20.7520917739882, 59 = -20.8009625117877, 60 = -4.44226686221951, 61 = -4.44226686221951, 62 = -4.44226686221951\\
+  czpb1 = 0.017618747589559
+  , czpb2 = -0.0103807085088108
+  , czpb2 = -0.000841956057332202
+}
+
+\subsubsection{Bruchereignisse}
+
+Die Koeffizienten zur Bestimmung eines Bruchereignisses der Fichte sind:
+
+\texttt{cbpGeologie: 1 = 5.64723103375928, 2 = 5.58538131688251, 3 = 5.68070638953452, 4 = -5.10046577141812, 5 = 6.51906361089464, 6 = 6.56343106667525, 7 = -5.76715845667112, 8 = 5.89456305953475, 9 = 5.65751147031432, 10 = 5.91198159799151, 11 = 6.23460575462552, 12 = -5.49242984064802, 13 = 4.3303027299514, 14 = -5.08418122106922, 15 = 5.54463276733589, 16 = 6.17823539940015, 17 = 5.77557945769026, 18 = 5.60922226624466, 19 = 6.16625449787241, 20 = 5.26050384048405, 21 = 5.64723103375928, 22 = 6.57877733538479, 23 = 5.26872573381007, 24 = 5.64723103375928, 25 = 6.04201993464926, 26 = 5.61875680565068, 27 = 5.3742349387598, 28 = 6.54286017647141, 29 = -6.75209130102572, 30 = 6.21789307030023, 31 = 6.20051901329182, 32 = 6.06409547544508, 33 = 7.00961590259922, 34 = 6.2065740457706, 35 = 5.64723103375928, 36 = -5.97682288953952, 37 = 5.8613801743823, 38 = 5.92370927421033, 39 = 6.21784091688131, 40 = 5.77924880635635, 41 = 5.75406947375954, 42 = 5.6706786685704, 43 = 5.55256870285861, 44 = 5.51400868562721, 45 = 5.50466977405054, 46 = 5.64723103375928, 47 = 5.31318411291283, 48 = 5.60580604160981, 49 = 5.06285438515232, 50 = 6.052843911185, 51 = 5.89592629191158, 52 = 5.81896952987401, 53 = 7.0374399419465, 54 = 5.9505738843445, 55 = 6.18562241189085, 56 = 5.72918883495697, 57 = 6.15443964122795, 58 = 6.94597823506487, 59 = 5.67120582773727, 60 = -6.45420507038732, 61 = 5.64723103375928, 62 = -6.25997614906692\\
+  cbp1 = 0.0492826146914046
+  , cbp2 = 0.00670945689359753
+  , cbp3 = 0.998958294586338
+  , cbp4 = -0.0853681028833942
+  , cbp5 = 0.0206966105362673
+  , cbp6 = -2.12812636272471
+  , cbp7 = 0.00158758559899495
+  , cbp8 = 0.00679447611444564
+}
+
+Die Koeffizienten zur Bestimmung dass alle Bäume gebrochen sind lauten:
+
+\texttt{cbpa0 = 2.10186159615126, cbpa1 = -2.66059736152267}
+
+Die Koeffizienten zur Bestimmung der Wahrscheinlichkeit, dass ein Baum bricht, auf einem Punkt mit Bruch, auf dem nicht alle Bäume brechen lauten:
+
+\texttt{cbpbGeologie: "1 = -3.11404123818367, 2 = -3.2089199885061, 3 = -3.48552667028197, 4 = -3.11404123818367, 5 = -2.50180230410734, 6 = -1.61361628039196, 7 = -3.11404123818367, 8 = -3.28225392022144, 9 = -3.23137804080334, 10 = -3.21700480655566, 11 = -2.54347051752028, 12 = -3.11404123818367, 13 = -4.06576888107169, 14 = -3.11404123818367, 15 = -3.44513948052119, 16 = -3.71575963755247, 17 = -3.09168650916898, 18 = -3.75860454049094, 19 = -3.25102281122018, 20 = -2.76257749625755, 21 = -3.11404123818367, 22 = -3.54210080990557, 23 = -3.68057484695281, 24 = -3.11404123818367, 25 = -3.28721197847364, 26 = -3.81895034370782, 27 = -3.23798037404374, 28 = -3.31669222326313, 29 = -3.11404123818367, 30 = -3.14929834368431, 31 = -3.05073910467329, 32 = -3.18861475165285, 33 = -3.51735910853901, 34 = -2.99594239934687, 35 = -3.11404123818367, 36 = -3.11404123818367, 37 = -3.14244798973901, 38 = -3.34993635921998, 39 = -3.2617121314878, 40 = -3.13705067762549, 41 = -2.89415121696867, 42 = -3.42150667505539, 43 = -3.80007466721556, 44 = -3.38097479231494, 45 = -3.37291813813285, 46 = -3.11404123818367, 47 = -2.52067347737501, 48 = -3.59489668438266, 49 = -3.79840257056817, 50 = -1.98508788636281, 51 = -3.46111281717833, 52 = -3.56446241779075, 53 = -3.46066058861148, 54 = -3.46453215543565, 55 = -3.12019648171032, 56 = -3.28599854843101, 57 = -3.20012320004806, 58 = -3.8291003859388, 59 = -3.42184759310081, 60 = -3.11404123818367, 61 = -3.11404123818367, 62 = -3.11404123818367\\
+  cbpb1 = -0.0412216231815078 , cbpb2 = 0.0102208274713109 , cbpb3 =
+  0.02935633409254 , cbpb4 = -0.00223226976745298 , cbpb5 =
+  0.000253006766449054 }
+
+
+\subsection{Ertragstafel}
+
+Die Raumdichte der Fichte [$\text{kg/m}^3$] wurde mit
+Gleichung~\ref{eq:raumdichte} bestimmt, wobei \emph{rw} die
+Jahrringbreite [mm] und \emph{BHD} der Durchmesser in 1.3\,m Höhe [cm]
+ist.
+\begin{dmath}
+  \label{eq:raumdichte}
+  \text{Raumdichte} = e^{-1.456987 - 0.048796 * rw + 0.114872 * \ln(1 + BHD)}
+\end{dmath}
+
+Die Ast-- und Nadelmasse wurde nach
+\cite{eckmuellner2006NadelAstmasse} mit Gleichung~\ref{eq:blattmasse}
+und \ref{eq:astmasse} [Atro-kg] bestimmt wobei der \emph{BHD} [cm], die
+Baumhöhe \emph{h} [m] und der Kronenverhätniss \emph{cr} [1] verwendet
+werden.
+\begin{dgroup}
+  \begin{dmath}
+    \label{eq:blattmasse}
+    \text{Nadelmasse} = e^{-1.706416 + 1.9710 * log(BHD) - 0.3982 * log(h) - 0.9881 * (1-cr)}
+  \end{dmath}
+  \begin{dmath}
+    \label{eq:astmasse}
+    \text{Astmasse} = e^{-2.79494 + 2.8420 * log(BHD) - 0.8525 * log(h) - 0.9760 * (1-cr)}
+  \end{dmath}
+\end{dgroup}
+
+Die Wurzelmasse [Atro-kg] wurde nach
+\cite{petersson2006belowGroundBiomass} über den BHD [cm] bestimmt.
+
+\begin{dmath}
+  \label{eq:wurzelmasse}
+  \text{Wurzelmasse} = \frac{e^{4.58761 + 10.44035 * (BHD*10) / ((BHD*10) + 138)}}{1000}
+\end{dmath}
+
+Der Rindenanteil am Schaftvolumen wurde nach
+\cite{peintinger1973kubierungstabelle} und
+\cite{guede1988kubierungstabelle}, ausgeglichen von Günter Rössler, mit
+dem BHD [cm] bestimmt.
+
+\begin{dmath}
+  \label{eq:rindenanteil}
+  \text{Rindenanteil} = BHD^2 - \frac{(BHD - 0.2583 - 0.0406*BHD)^2}{d^2}
+\end{dmath}
+
+Das Schaftholzvolumen wurde mit Hilfe der Formzahl nach
+\cite{pollanschuetz1974Formzahlen}
+bzw. \cite{schieler1997DisWaldinventur} bestimmt, wobei für
+$5 <= \text{BHD} < 10.6$\,cm die Koeffizienten b1=0.563443,
+b2=-0.12731, b3=-8.55022, b4=0, b5=0, b6=7.6331 und b7=0 sowie für BHD
+> 10.6\,cm b1=0.46818, b2=-0.013919, b3=-28.213, b4=0.37474,
+b5=-0.28875, b6=28.279 und b7=0 sowie für BHD < 5\,cm fz=0.5 verwendet
+wurde. Wobei bei der Berechnung der Formzahl sowohl BHD als auch Höhe
+in dm einzusetzen sind.
+
+\begin{dmath}
+  \label{eq:Schaftholz}
+  fz = b1 + b2*log(d)^2 + b3/h + b4/d + b5/d^2 + b6/(d*h) + b7/(d^2*h)\\
+  V_s = BHD^2* \pi / 4 * h * fz
+\end{dmath}
+
+\begin{description}
+\item[age] Alter [Jahre]
+\item[ho] Oberhöhe [m]
+\item[hg] Höhe des Grundflächemittelstammes [m]
+\item[dg] Durchmesser des Grundflächenmittelstammes [cm]
+\item[hKa] Höhe des Kronenansatzes [m]
+\item[g] Grundfläche [m2/ha]
+\item[v] Schaftholzvolumen Vorratsfestmeter [m3/ha]
+\item[s.NH] Erntefestmeter Sonstiges Nutzholz [m3/ha]
+\item[1b] Erntefestmeter der Stärkeklasse 15-20\,cm [m3/ha]
+\item[2a] Erntefestmeter der Stärkeklasse 20-25\,cm [m3/ha]
+\item[2b] Erntefestmeter der Stärkeklasse 25-30\,cm [m3/ha]
+\item[3a] Erntefestmeter der Stärkeklasse 30-35\,cm [m3/ha]
+\item[3b] Erntefestmeter der Stärkeklasse 35-40\,cm [m3/ha]
+\item[4+] Erntefestmeter der Stärkeklasse >40\,cm [m3/ha]
+\item[n] Stammzahl [1/ha]
+\item[BmS] Trockenbiomasse Schaftholz [t/ha]
+\item[BmA] Trockenbiomasse Äste [t/ha]
+\item[BmN] Trockenbiomasse Nadel [t/ha]
+\item[BmR] Trockenbiomasse Rinde [t/ha]
+\item[BmW] Trockenbiomasse Wurzeln [t/ha]
+\item[BmHarv] Trockenbiomasse die bei einer Ernte üblicherweise entnommen wird [t/ha]
+\item[BmResid] Trockenbiomasse die bei einer Ernte üblicherweise zurück bleibt [t/ha]
+\item[..Aus] Für den Ausscheidenden Bestand
+\item[hoRef] Referenzoberhöhe [m]
+\item[lfz] Laufender Zuwachs Erntefestmetern [m3/ha/Jahr]
+\item[dgz] Durchschnittlicher Gesamtzuwachs Erntefestmetern [m3/ha/Jahr]
+\end{description}
+
+\input{TafelFichte.tex}
+
+\section{Diskussion}
+
+Die Waldinventurdaten macht derzeit nur von Bäumen mit einem
+BHD~>~5\,cm wiederholte Messungen. Damit basiert die geschätzte
+Höhenentwicklung kleiner Bäume auf Extrapolation des Verlaufes der
+größeren Bäume.
+
+Die Beimischung anderer Baumarten kann die Oberhöhenbonität
+verändern. Dennoch können hier weitere Faktoren die ermittelten
+Koeffizienten verändern. Beispielsweise kann eine bestimmte Baumart
+gehäuft auf besseren oder schlechteren Standorten beigemischt sein,
+was zu einer Verschiebung der Bonität führt, aber nicht durch die
+beigemischte Baumart verursacht wird. Auch ist es möglich, dass im
+Zuge von Mischungsregulierungen auch die Oberhöhenstämme entnommen
+werden, um der beigemischten Baumart den stärksten Konkurrenten
+auszuschalten. Auch hier wird zwar die Oberhöhe reduziert aber nicht
+unmittelbar durch die beigemischte Baumart.
+
+Bei der Anwendung des Höhenzuwachsmodells ist nicht sichergestellt,
+dass die Oberhöhenbäume dem vorgegebenen Oberhöhenfächer folgen. Daher
+ist ein Korrekturfaktor zu bestimmen um hierin Übereinstimmung zu
+schaffen.
+
+Mit der Refferenzoberhöhe können zwar Behandlungsvarianten der
+gleichen Baumart verglichen werden, ein direkter Vergleich zwischen
+verschiedenen Baumarten ist damit allerdings nicht möglich da
+verschiedene Baumarten unterschiedliche Höhenentwicklungen und auch
+unterschiedliche Wuchsleistungen auf gleichen Standorten haben
+können. Die Bestimmung der Bonität, für verschiedene Baumarten, über
+den Standort, mag hier eine Lösung bieten, dieser ist aber Derzeit
+noch mit größeren Zufallsstreuungen behaftet. Zur Darstellung
+großräumiger Tendenzen scheint die Bonitierung über den Standort eine
+gewisse Hilfestellung bei der waldbaulichen Entscheidung zu bieten,
+für Entscheidungen auf Bestandesebene ist sie derzeit höchstens als
+letzter Ausweg, wenn keine anderen Informationen zur Verfügung stehen,
+zu betrachten.
+
+\section*{Danksagung}
+
+\emph{Gerhard Pelzmann} Möchte ich für die anregende Diskussion bei
+der Modellerstellung als auch für die Aufstellung der finanziellen
+Mittel, für ein Projekt in dem ein Waldwahstumsmodell entwickelt werden
+konnte, danken. Für die Finanzierung möchte ich dem
+\emph{Bundesministerium für Landwirtschaft, Regionen und Tourismus}
+danken. Für die Hinweise, welche Kriterien für die Praxis relevant
+sind, möchte in \emph{Günther Bronner} danken.
+
+\addcontentsline{toc}{section}{Literatur:}
+\bibliography{literature}
+
+%Autor: Georg Kindermann
+
+\end{document}
+
